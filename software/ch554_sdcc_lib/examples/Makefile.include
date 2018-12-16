@@ -57,7 +57,7 @@ flash: $(TARGET).bin pre-flash
 	$(WCHISP) -f $(TARGET).bin -g
 
 .DEFAULT_GOAL := all
-all: $(TARGET).bin $(TARGET).hex
+all: $(TARGET).hex
 
 clean:
 	rm -f \
