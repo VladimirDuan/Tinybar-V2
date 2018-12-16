@@ -1,13 +1,12 @@
-// Blink an LED connected to pin 1.7
+// Tinybar V2
+// Duan
 
 #include <stdint.h>
-
 #include <ch554.h>
 #include <debug.h>
 #include <bootloader.h>
 #include "bitbang.h"
-
-#define LED_COUNT (16)
+#include "display.h"
 
 #define BTN_PIN 4
 SBIT(BTN, 0x90, BTN_PIN);
@@ -15,75 +14,43 @@ SBIT(BTN, 0x90, BTN_PIN);
 #define SSW_PIN 2
 SBIT(SSW, 0xB0, SSW_PIN);
 
-
-__xdata uint8_t led_data[LED_COUNT*3];
-
-__code uint8_t text[] = 
+void main()
 {
-0x44,0x08,0x58,0x06,0xC0,0x01,0xFF,0xFF,0x50,0x01,0x4C,0x86,0x00,0x60,0xFC,0x1F,0x44,0x00,0x54,0xFD,0x55,0x45,0xFE,0x47,0x54,0x45,0xF4,0xFD,0x44,0x00,0x00,0x00,/*"糖",0*/
-0x80,0x80,0x70,0x60,0x00,0x18,0xFF,0x07,0x20,0x08,0x10,0x30,0x00,0x81,0xC0,0x80,0x38,0x40,0x00,0x40,0xFF,0x27,0x00,0x10,0x08,0x0C,0x10,0x03,0x60,0x00,0x00,0x00,/*"炒",1*/
-0x00,0x44,0x02,0x44,0xF2,0x24,0x92,0x24,0x92,0x14,0xFE,0x0C,0x92,0x04,0x92,0xFF,0x92,0x04,0xFE,0x0C,0x92,0x14,0x92,0x24,0xF2,0x24,0x02,0x44,0x00,0x44,0x00,0x00,/*"栗",2*/
-0x80,0x00,0x82,0x00,0x82,0x00,0x82,0x00,0x82,0x00,0x82,0x40,0x82,0x80,0xE2,0x7F,0xA2,0x00,0x92,0x00,0x8A,0x00,0x86,0x00,0x82,0x00,0x80,0x00,0x80,0x00,0x00,0x00 /*"子",3*/
-};
-
-void displayImage()
-{
-    uint16_t temp;
-    uint8_t i, j, k;
-    mDelaymS(50);
-    for(i=0 ; i<64 ; i++){
-        temp = (text[i*2+1]<<8)+text[i*2];
-        for(j=0; j<16; j++)
-        {
-            if(temp & 0x0001 == 0x0001)
-            {
-                led_data[(16-j)*3+0] = 0x00;
-                led_data[(16-j)*3+1] = 0x3f;
-                led_data[(16-j)*3+2] = 0x3f;
-            }
-            else
-            {
-                led_data[(16-j)*3+0] = 0x00;
-                led_data[(16-j)*3+1] = 0x00;
-                led_data[(16-j)*3+2] = 0x00;
-            }
-            temp = temp>>1;
-        }
-        bitbangWs2812(LED_COUNT, led_data);
-        mDelayuS(300);
-    }
-    for(k=0; k<16; k++)
-    {
-        led_data[k*3+0] = 0x00;
-        led_data[k*3+1] = 0x00;
-        led_data[k*3+2] = 0x00;
-    }
-    bitbangWs2812(LED_COUNT, led_data);
-}
-
-void main() 
-{
-    uint8_t k;
+    uint8_t text_num = 0;
     CfgFsys();
     mDelaymS(50);
-    if(BTN == 0)
+    if (BTN == 0)
     {
         mDelaymS(50);
-        if(BTN == 0)
+        if (BTN == 0)
         {
             EA = 0;
             mDelaymS(100);
             bootloader();
-            while(1); 
+            while (1)
+                ;
         }
     }
 
     bitbangSetup();
+    pallette();
 
-    while (1) {
-        if(SSW == 0)
+    while (1)
+    {
+        if (SSW == 0)
         {
-            displayImage();
+            displayImage(text_num);
+        }
+        if (BTN == 0)
+        {
+            mDelaymS(50);
+            if (BTN == 0)
+            {
+                text_num++;
+                text_num %= 5;
+            }
+            while (BTN == 0)
+                ;
         }
     }
 }

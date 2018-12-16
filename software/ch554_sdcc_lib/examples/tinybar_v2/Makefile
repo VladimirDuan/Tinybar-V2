@@ -11,6 +11,8 @@ CODE_SIZE = 0x2800
 C_FILES = \
 	main.c \
 	bitbang.c \
+	text.c \
+	display.c \
 	../../include/debug.c
 
 ASM_FILES = \
